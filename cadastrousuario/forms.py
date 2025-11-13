@@ -1,9 +1,10 @@
-# usuarios/forms.py
+#o arquivo forms.py não é mais necessário e foi incluido dentro de views
+""" usuarios/forms.py
 
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import Profile
+from .models import E_Usuario
 from django.db import transaction # Para garantir que os dois sejam criados
 
 class CustomUserCreationForm(UserCreationForm):
@@ -35,8 +36,8 @@ class CustomUserCreationForm(UserCreationForm):
             tipo = self.cleaned_data.get('tipo_usuario')
 
             # 3. Cria o Profile conectado ao usuário
-            Profile.objects.create(
+            E_Usuario.objects.create(
                 user=user,
                 tipo_usuario=tipo
             )
-        return user
+        return user"""
