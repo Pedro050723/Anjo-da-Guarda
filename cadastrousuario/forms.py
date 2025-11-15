@@ -9,12 +9,12 @@ from django.db import transaction # Para garantir que os dois sejam criados
 class CustomUserCreationForm(UserCreationForm):
     # Adicionamos nosso campo 'tipo_usuario' ao formulário
     TIPO_USUARIO_ESCOLHAS = (
-        ('familiar', 'Familiar'),
         ('cuidador', 'Cuidador'),
+        ('familiar', 'Familiar'),
     )
     tipo_usuario = forms.ChoiceField(
         choices=TIPO_USUARIO_ESCOLHAS, 
-        label="Tipo de conta"
+        label="Você é Cuidador ou Familiar?"
     )
 
     class Meta(UserCreationForm.Meta):
