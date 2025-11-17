@@ -1,0 +1,10 @@
+<h2>Cadastrar Novo Idoso</h2>
+<p>Preencha os dados do idoso que receberá os cuidados.</p>
+
+<form method="post">
+    {% csrf_token %}
+    
+    {{ form.as_p }}
+
+    <button type="submit">Salvar Idoso</button>
+</form>

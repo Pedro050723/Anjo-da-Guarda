@@ -9,8 +9,8 @@ class E_Usuario(models.Model):
 
     # Nossos campos personalizados
     TIPO_USUARIO_ESCOLHAS = (
-        ('familiar', 'Familiar'),
         ('cuidador', 'Cuidador'),
+        ('familiar', 'Familiar'),
     )
     tipo_usuario = models.CharField(max_length=10, choices=TIPO_USUARIO_ESCOLHAS)
 
