@@ -1,0 +1,69 @@
+<h1>Bem-vindo ao Anjo da Guarda</h1>
+
+{% if user.is_authenticated %}
+    <p>Olá, {{ user.username }}!</p>
+    
+    {% if user.profile.tipo_usuario == 'familiar' %}
+        <div style="background-color: #e3f2fd; padding: 10px;">
+            <h3>Painel da Família</h3>
+            <a href="{% url 'gestao:cadastrar_idoso' %}">Cadastrar Novo Idoso</a>
+            <a href="{% url 'gestao:contratar_cuidador' %}">Contratar Cuidador</a>
+
+            <p>Seus Idosos Cadastrados:</p>
+            <ul>
+                {% for idoso in user.idosos.all %}
+                    <li>{{ idoso.nome }} ({{ idoso.idade }} anos)</li>
+                {% empty %}
+                    <li>Você ainda não cadastrou nenhum idoso.</li>
+                {% endfor %}
+            </ul>
+        </div>
+
+    {% elif user.profile.tipo_usuario == 'cuidador' %}
+        <div style="background-color: #e8f5e9; padding: 15px; border-radius: 8px;">
+            <h3>Painel do Cuidador</h3>
+            
+            {% if convites %}
+                <div style="background-color: #fff3cd; padding: 10px; border: 1px solid #ffeeba; margin-bottom: 15px;">
+                    <h4>🔔 Convites Pendentes</h4>
+                    <ul>
+                        {% for contrato in convites %}
+                            <li>
+                                <strong>{{ contrato.familiar.first_name|default:contrato.familiar.username }}</strong> 
+                                convidou você para cuidar de 
+                                <strong>{{ contrato.idoso.nome }}</strong>.
+                                <br>
+                                <a href="{% url 'gestao:responder_contrato' contrato.id 'aceitar' %}" style="color: green; font-weight: bold;">[ACEITAR]</a>
+                                <a href="{% url 'gestao:responder_contrato' contrato.id 'recusar' %}" style="color: red;">[RECUSAR]</a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% else %}
+                <p>Nenhum convite novo.</p>
+            {% endif %}
+
+            <h4>Meus Pacientes (Idosos)</h4>
+            <ul>
+                {% for contrato in meus_contratos %}
+                    <li>
+                        <strong>{{ contrato.idoso.nome }}</strong> 
+                        (Resp: {{ contrato.familiar.username }})
+                        <br>
+                        <small>Status: {{ contrato.get_status_display }}</small>
+                        </li>
+                {% empty %}
+                    <li>Você ainda não está cuidando de nenhum idoso.</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+
+    <br>
+    <a href="{% url 'logout' %}">Sair</a>
+
+{% else %}
+    <p>Por favor, faça login ou cadastre-se.</p>
+    <a href="{% url 'cadastrar' %}">Criar Conta</a> | 
+    <a href="{% url 'login' %}">Entrar</a>
+{% endif %}
