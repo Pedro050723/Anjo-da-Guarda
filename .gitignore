@@ -1,0 +1,13 @@
+# Byte-code compilado do Python
+__pycache__/
+*.pyc
+
+# Banco de dados local (NUNCA coloque no Git)
+db.sqlite3
+
+# Arquivos de ambiente (Contém senhas secretas)
+.env
+
+# Diretórios de mídia e estáticos (gerenciados pelo Django)
+/media/
+/static/
