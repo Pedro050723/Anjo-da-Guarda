@@ -3,7 +3,7 @@ from django.contrib.auth.models import User
 
 # Create your models here.
 
-class E_Usuario(models.Model):
+class Profile(models.Model):
     # Conexão 1-para-1 com o modelo User padrão do Django
     user = models.OneToOneField(User, on_delete=models.CASCADE)
 

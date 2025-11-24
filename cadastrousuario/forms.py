@@ -4,7 +4,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import E_Usuario
+from .models import Profile
 from django.db import transaction # Para garantir que os dois sejam criados
 
 class CustomUserCreationForm(UserCreationForm):
@@ -36,7 +36,7 @@ class CustomUserCreationForm(UserCreationForm):
             tipo = self.cleaned_data.get('tipo_usuario')
 
             # 3. Cria o Profile conectado ao usuário
-            E_Usuario.objects.create(
+            Profile.objects.create(
                 user=user,
                 tipo_usuario=tipo
             )
