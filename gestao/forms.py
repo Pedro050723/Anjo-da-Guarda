@@ -1,6 +1,6 @@
 # gestao/forms.py
 from django import forms
-from .models import Idoso, Contrato
+from .models import Idoso, Contrato, Rotina
 from django.contrib.auth.models import User
 
 class IdosoForm(forms.ModelForm):
@@ -41,3 +41,13 @@ class ContratoForm(forms.ModelForm):
             self.fields['idoso'].queryset = Idoso.objects.filter(
                 familiar_responsavel=familiar
             )
+class RotinaForm(forms.ModelForm):
+    class Meta:
+        model = Rotina
+        fields = ['medicamentos', 'refeicoes', 'atividades', 'anormalidades']
+        widgets = {
+            'medicamentos': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Quais remédios foram dados?'}),
+            'refeicoes': forms.Textarea(attrs={'rows': 3, 'placeholder': 'O que o idoso comeu?'}),
+            'atividades': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Passeios, TV, conversas...'}),
+            'anormalidades': forms.Textarea(attrs={'rows': 3, 'placeholder': 'Algo fora do comum?'}),
+        }

@@ -2,8 +2,9 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages # Para enviar feedback (ex: "Cuidador não encontrado")
-from .forms import IdosoForm, ContratoForm # Importe o novo form
-from .models import Contrato # Importe o modelo
+from .forms import IdosoForm, ContratoForm, RotinaForm # Importe o novo form
+from django.utils import timezone # Para pegar a data de hoje
+from .models import Idoso, Contrato, Rotina # Importe o modelo
 from cadastrousuario.models import Profile
 from django.shortcuts import get_object_or_404 #segurança
 
@@ -104,3 +105,62 @@ def responder_contrato(request, contrato_id, resposta):
 
     # Volta para a home
     return redirect('home')
+
+@login_required
+def atualizar_rotina(request, idoso_id):
+    # 1. Segurança: Verifica se o Cuidador tem contrato ATIVO com esse Idoso
+    # (Isso cobre a validação inicial do diagrama)
+    idoso = get_object_or_404(Idoso, id=idoso_id)
+    tem_contrato = Contrato.objects.filter(
+        cuidador=request.user, 
+        idoso=idoso, 
+        status='ativo'
+    ).exists()
+
+    if not tem_contrato:
+        messages.error(request, "Você não tem permissão para cuidar deste idoso.")
+        return redirect('home')
+
+    # 2. Verifica se já existe rotina HOJE (Lógica de "Atualizar")
+    hoje = timezone.now().date()
+    rotina_existente = Rotina.objects.filter(idoso=idoso, data=hoje).first()
+
+    if request.method == 'POST':
+        # Se já existe, atualiza (instance=rotina_existente). Se não, cria nova.
+        form = RotinaForm(request.POST, instance=rotina_existente)
+        if form.is_valid():
+            rotina = form.save(commit=False)
+            rotina.idoso = idoso
+            rotina.cuidador = request.user
+            rotina.save()
+            messages.success(request, "Rotina atualizada com sucesso!")
+            return redirect('home')
+    else:
+        # Preenche o formulário com dados existentes se houver
+        form = RotinaForm(instance=rotina_existente)
+
+    return render(request, 'gestao/atualizar_rotina.html', {
+        'form': form, 
+        'idoso': idoso,
+        'hoje': hoje
+    })
+
+@login_required
+def visualizar_rotina(request, idoso_id):
+    # 1. Busca o Idoso
+    idoso = get_object_or_404(Idoso, id=idoso_id)
+
+    # 2. Segurança: Só o Familiar dono do idoso pode ver (RF05)
+    # (Ou um cuidador com contrato ativo, se quisermos expandir depois)
+    if idoso.familiar_responsavel != request.user:
+        messages.error(request, "Você não tem permissão para ver a rotina deste idoso.")
+        return redirect('home')
+
+    # 3. Busca as rotinas no banco (ordenadas da mais recente para a antiga)
+    # O 'related_name="rotinas"' que definimos no models.py ajuda aqui
+    rotinas = idoso.rotinas.all().order_by('-data')
+
+    return render(request, 'gestao/visualizar_rotina.html', {
+        'idoso': idoso,
+        'rotinas': rotinas
+    })

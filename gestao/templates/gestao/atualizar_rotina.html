@@ -1,0 +1,15 @@
+<h2>Diário de {{ idoso.nome }}</h2>
+<p>Data: {{ hoje|date:"d/m/Y" }}</p>
+
+<form method="post">
+    {% csrf_token %} {% for field in form %}
+    <div style="margin-bottom: 15px;">
+        <label style="font-weight: bold;">{{ field.label }}</label>
+        <br> {{ field }}
+    </div>
+    {% endfor %}
+
+    <button type="submit" style="padding: 10px 20px; background-color: #4CAF50; color: white; border: none;">
+        Salvar Rotina
+    </button>
+</form>
