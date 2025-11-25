@@ -68,3 +68,20 @@ class Contrato(models.Model):
 
     def __str__(self):
         return f"Contrato para {self.idoso.nome} com {self.cuidador.username} ({self.get_status_display()})"
+    
+class Rotina(models.Model):
+    idoso = models.ForeignKey(Idoso, on_delete=models.CASCADE, related_name="rotinas")
+    cuidador = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
+    data = models.DateField(auto_now_add=True)
+
+    medicamentos = models.TextField(blank=True, null=True, verbose_name="Medicamentos")
+    refeicoes = models.TextField(blank=True, null=True, verbose_name="Refeições")
+    atividades = models.TextField(blank=True, null=True, verbose_name="Atividades de Lazer")
+    anormalidades = models.TextField(blank=True, null=True, verbose_name="Anormalidades/Ocorrências")
+
+    class Meta:
+        unique_together = ('idoso', 'data')
+        ordering = ['-data']
+
+    def __str__(self):
+        return f"Rotina de {self.idoso.nome} em {self.data}"

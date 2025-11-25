@@ -1,0 +1,16 @@
+<h2>Contratar Cuidador (RF06)</h2>
+<p>Envie um convite para um cuidador assumir a rotina de um idoso.</p>
+
+{% if messages %}
+    <ul class="messages">
+    {% for message in messages %}
+        <li style="color: red;">{{ message }}</li>
+    {% endfor %}
+    </ul>
+{% endif %}
+
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">Enviar Convite</button>
+</form>

@@ -1,0 +1,38 @@
+<h2>Histórico de Rotina: {{ idoso.nome }}</h2>
+<a href="{% url 'home' %}">Voltar para Home</a>
+<hr> {% if rotinas %} {% for rotina in rotinas %}
+<div style="border: 1px solid #ccc; padding: 15px; margin-bottom: 20px; border-radius: 8px; background-color: #f9f9f9;">
+
+    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 10px;">
+        <strong>📅 Data: {{ rotina.data|date:"d/m/Y" }}</strong>
+        <small>Registrado por: {{ rotina.cuidador.username|default:"Cuidador desconhecido" }}</small>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+
+        {% if rotina.medicamentos %}
+        <div>
+            <strong>💊 Medicamentos:</strong>
+            <p>{{ rotina.medicamentos|linebreaks }}</p>
+        </div>
+        {% endif %} {% if rotina.refeicoes %}
+        <div>
+            <strong>🍎 Refeições:</strong>
+            <p>{{ rotina.refeicoes|linebreaks }}</p>
+        </div>
+        {% endif %} {% if rotina.atividades %}
+        <div>
+            <strong>⚽ Atividades:</strong>
+            <p>{{ rotina.atividades|linebreaks }}</p>
+        </div>
+        {% endif %} {% if rotina.anormalidades %}
+        <div style="color: #d32f2f;">
+            <strong>⚠️ Ocorrências/Anormalidades:</strong>
+            <p>{{ rotina.anormalidades|linebreaks }}</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endfor %} {% else %}
+<p>Nenhum registro de rotina encontrado para este idoso.</p>
+{% endif %}
