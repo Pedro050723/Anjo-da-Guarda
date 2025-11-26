@@ -1,0 +1,12 @@
+<h2>Finalizar Pagamento</h2>
+<p>Você está contratando: <strong>{{ plano.nome }}</strong></p>
+<p>Valor: R$ {{ plano.valor }}</p>
+
+<div style="background:#eee; padding:20px;">
+    <p>💳 [Simulação de Gateway de Pagamento]</p>
+    <p>Cartão final 1234 (Aprovado)</p>
+</div>
+
+<a href="{% url 'gestao:processar_pagamento' plano.id %}" style="background:green; color:white; padding:10px;">
+    CONFIRMAR PAGAMENTO
+</a>

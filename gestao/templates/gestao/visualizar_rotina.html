@@ -1,3 +1,10 @@
+{% if aviso_limitacao %}
+<div style="background-color: #fff3cd; color: #856404; padding: 10px; margin-bottom: 15px;">
+    ⚠️ Você está vendo apenas os últimos 7 dias.
+    <a href="{% url 'gestao:listar_planos' %}">Vire Premium</a> para ver tudo.
+</div>
+{% endif %}
+
 <h2>Histórico de Rotina: {{ idoso.nome }}</h2>
 <a href="{% url 'home' %}">Voltar para Home</a>
 <hr> {% if rotinas %} {% for rotina in rotinas %}

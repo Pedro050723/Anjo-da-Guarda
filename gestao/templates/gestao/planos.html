@@ -1,0 +1,12 @@
+<h2>Escolha seu Plano</h2>
+{% for plano in planos %}
+<div style="border:1px solid #ccc; padding:10px; margin:10px;">
+    <h3>{{ plano.nome }}</h3>
+    <p>R$ {{ plano.valor }}</p>
+    <ul>
+        <li>Até {{ plano.limite_idosos }} idosos</li>
+        <li>{% if plano.historico_ilimitado %}Histórico Ilimitado{% else %}Histórico de 7 dias{% endif %}</li>
+    </ul>
+    <a href="{% url 'gestao:assinar_plano' plano.id %}">Escolher este</a>
+</div>
+{% endfor %}

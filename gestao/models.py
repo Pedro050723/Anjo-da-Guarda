@@ -1,58 +1,37 @@
+# gestao/models.py
 from django.db import models
 from django.conf import settings
+from django.utils import timezone
+from datetime import timedelta
 
-# Create your models here.
-
+# 1. Modelo IDOSO
 class Idoso(models.Model):
-    # Esta linha conecta o Idoso ao usuário Familiar
-    # Usamos settings.AUTH_USER_MODEL para referenciar o User padrão
     familiar_responsavel = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
-        related_name="idosos" # Permite acessar user.idosos
+        related_name="idosos"
     )
-
-    # Informações básicas pedidas no RF04 
     nome = models.CharField(max_length=100)
     idade = models.PositiveIntegerField()
-    condicoes_saude = models.TextField(
-        blank=True, 
-        null=True,
-        verbose_name="Condições de Saúde Principais"
-    )
-
-    # Esta é a relação Muitos-para-Muitos com o Usuário (Cuidador)
-    # através do nosso futuro modelo 'Contrato'.
+    condicoes_saude = models.TextField(blank=True, null=True, verbose_name="Condições de Saúde")
+    
+    # Relação com cuidadores via Contrato
     cuidadores = models.ManyToManyField(
         settings.AUTH_USER_MODEL,
-        through='Contrato', # O modelo que fará a ponte
+        through='Contrato',
         through_fields=('idoso', 'cuidador'),
         related_name="idosos_cuidados"
     )
 
     def __str__(self):
         return self.nome
-    
+
+# 2. Modelo CONTRATO (Vínculo Familiar-Cuidador-Idoso)
 class Contrato(models.Model):
-    # Quem contratou (o dono do Idoso)
-    familiar = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="contratos_feitos"
-    )
-    # Quem foi contratado
-    cuidador = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name="contratos_recebidos"
-    )
-    # Para qual idoso é o contrato
-    idoso = models.ForeignKey(
-        Idoso,
-        on_delete=models.CASCADE
-    )
+    familiar = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="contratos_feitos")
+    cuidador = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="contratos_recebidos")
+    idoso = models.ForeignKey(Idoso, on_delete=models.CASCADE)
     
-    # Status do convite (como o RF06 menciona "Após o aceite")
     STATUS_CHOICES = (
         ('pendente', 'Pendente'),
         ('ativo', 'Ativo'),
@@ -62,26 +41,79 @@ class Contrato(models.Model):
     data_criacao = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        # Garante que não se pode convidar o mesmo cuidador 
-        # para o mesmo idoso duas vezes
         unique_together = ('cuidador', 'idoso')
 
     def __str__(self):
-        return f"Contrato para {self.idoso.nome} com {self.cuidador.username} ({self.get_status_display()})"
-    
+        return f"Contrato: {self.idoso.nome} - {self.cuidador.username}"
+
+# 3. Modelo CHAT (Sala de conversa ligada ao Contrato)
+class Chat(models.Model):
+    contrato = models.OneToOneField(Contrato, on_delete=models.CASCADE, related_name="chat_room")
+    criado_em = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Chat do Contrato #{self.contrato.id}"
+
+# 4. Modelo MENSAGEM (Do Chat)
+class Mensagem(models.Model):
+    chat = models.ForeignKey(Chat, on_delete=models.CASCADE, related_name="mensagens")
+    remetente = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    texto = models.TextField()
+    data_envio = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['data_envio']
+
+# 5. Modelo ROTINA (Diário)
 class Rotina(models.Model):
     idoso = models.ForeignKey(Idoso, on_delete=models.CASCADE, related_name="rotinas")
     cuidador = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.SET_NULL, null=True)
     data = models.DateField(auto_now_add=True)
 
-    medicamentos = models.TextField(blank=True, null=True, verbose_name="Medicamentos")
-    refeicoes = models.TextField(blank=True, null=True, verbose_name="Refeições")
-    atividades = models.TextField(blank=True, null=True, verbose_name="Atividades de Lazer")
-    anormalidades = models.TextField(blank=True, null=True, verbose_name="Anormalidades/Ocorrências")
+    medicamentos = models.TextField(blank=True, null=True)
+    refeicoes = models.TextField(blank=True, null=True)
+    atividades = models.TextField(blank=True, null=True)
+    anormalidades = models.TextField(blank=True, null=True)
 
     class Meta:
         unique_together = ('idoso', 'data')
         ordering = ['-data']
 
+# 6. Modelo PLANO (Financeiro)
+class Plano(models.Model):
+    nome = models.CharField(max_length=50)
+    valor = models.DecimalField(max_digits=10, decimal_places=2)
+    limite_idosos = models.IntegerField(default=2)
+    historico_ilimitado = models.BooleanField(default=False)
+    dias_validade = models.IntegerField(default=30)
+
     def __str__(self):
-        return f"Rotina de {self.idoso.nome} em {self.data}"
+        return self.nome
+
+# 7. Modelo ASSINATURA (Financeiro)
+class Assinatura(models.Model):
+    STATUS_CHOICES = (
+        ('pendente', 'Pendente'),
+        ('ativa', 'Ativa'),
+        ('cancelada', 'Cancelada'),
+    )
+    familiar = models.OneToOneField(
+        settings.AUTH_USER_MODEL, 
+        on_delete=models.CASCADE,
+        related_name='assinatura'
+    )
+    plano = models.ForeignKey(Plano, on_delete=models.SET_NULL, null=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pendente')
+    data_inicio = models.DateTimeField(auto_now_add=True)
+    data_expiracao = models.DateTimeField(null=True, blank=True)
+
+    def ativar(self):
+        self.status = 'ativa'
+        self.data_inicio = timezone.now()
+        if self.plano:
+            self.data_expiracao = self.data_inicio + timedelta(days=self.plano.dias_validade)
+        self.save()
+
+    def esta_valida(self):
+        agora = timezone.now()
+        return self.status == 'ativa' and self.data_expiracao and self.data_expiracao > agora
