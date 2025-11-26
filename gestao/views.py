@@ -1,14 +1,64 @@
 from django.shortcuts import render, redirect
+from django.contrib.auth import login
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages # Para enviar feedback (ex: "Cuidador não encontrado")
-from .forms import IdosoForm, ContratoForm, RotinaForm # Importe o novo form
+from .forms import IdosoForm, ContratoForm, RotinaForm, C_Cadastro # Importe o novo form
 from django.utils import timezone # Para pegar a data de hoje
 from .models import Idoso, Contrato, Rotina # Importe o modelo
-from cadastrousuario.models import Profile
+from .models import Profile
 from django.shortcuts import get_object_or_404 #segurança
 
 # Create your views here.
+def cadastrar(request):
+    # Se o formulário foi enviado (POST)
+    if request.method == 'POST':
+        form = C_Cadastro(request.POST)
+        if form.is_valid():
+            # O método save() do nosso formulário (que criamos no Passo 3)
+            # já cria o User E o Profile.
+            user = form.save()
+            
+            # Loga o usuário automaticamente após o registro
+            login(request, user)
+            
+            # Redireciona para uma página de "sucesso" ou "home"
+            # (Vamos supor que você tenha uma URL 'home' definida)
+            return redirect('home') # NOTA: Você precisará criar essa URL 'home'
+    
+    # Se for a primeira vez (GET), apenas mostra o formulário vazio
+    else:
+        form = C_Cadastro()
+        
+    # Renderiza o template HTML com o formulário
+    return render(request, 'gestao/cadastrar.html', {'form': form})
+
+def home(request):
+    # Vamos criar um contexto vazio
+    context = {}
+    
+    if request.user.is_authenticated:
+        try:
+            # Se for CUIDADOR, busca os convites pendentes
+            if request.user.profile.tipo_usuario == 'cuidador':
+                convites = Contrato.objects.filter(
+                    cuidador=request.user,
+                    status='pendente'
+                )
+                # Adiciona os convites ao pacote de dados (contexto)
+                context['convites'] = convites
+                
+                # Também podemos buscar os contratos já ACEITOS para mostrar a lista de idosos
+                meus_idosos = Contrato.objects.filter(
+                    cuidador=request.user,
+                    status='ativo'
+                )
+                context['meus_contratos'] = meus_idosos
+
+        except:
+            pass # Se der erro no profile (ex: superuser), ignora
+
+    return render(request, 'gestao/home.html', context)
 
 @login_required # 1. Garante que o usuário está logado
 def cadastrar_idoso(request):
