@@ -1,16 +1,77 @@
-<h2>Contratar Cuidador (RF06)</h2>
-<p>Envie um convite para um cuidador assumir a rotina de um idoso.</p>
+{% extends 'base.html' %} {% block content %}
 
-{% if messages %}
-    <ul class="messages">
-    {% for message in messages %}
-        <li style="color: red;">{{ message }}</li>
-    {% endfor %}
-    </ul>
-{% endif %}
+<div class="row justify-content-center">
+    <div class="col-md-8 col-lg-6">
 
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Enviar Convite</button>
-</form>
+        <div class="card shadow-lg border-0 rounded-lg">
+
+            <div class="card-header bg-primary text-white py-3">
+                <h3 class="mb-0"><i class="fas fa-handshake me-2"></i>Contratar Cuidador</h3>
+            </div>
+
+            <div class="card-body p-4">
+
+                <div class="alert alert-light border shadow-sm mb-4">
+                    <i class="fas fa-info-circle text-primary me-2"></i> Envie um convite usando o <strong>nome de usuário</strong> do cuidador. Ele precisará aceitar o convite no painel dele.
+                </div>
+
+                <form method="post">
+                    {% csrf_token %} {% for field in form %}
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-secondary">
+                                {% if 'idoso' in field.name %}
+                                    <i class="fas fa-user-injured me-1"></i>
+                                {% elif 'cuidador' in field.name %}
+                                    <i class="fas fa-user-nurse me-1"></i>
+                                {% else %}
+                                    <i class="fas fa-pen me-1"></i>
+                                {% endif %}
+                                {{ field.label }}
+                            </label> {{ field }} {% if field.errors %}
+                        <div class="text-danger small mt-1">
+                            <i class="fas fa-exclamation-circle"></i> {{ field.errors.0 }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+
+                    <hr class="my-4">
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'home' %}" class="btn btn-outline-secondary me-md-2">
+                            Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary px-4 fw-bold">
+                            <i class="fas fa-paper-plane me-2"></i> Enviar Convite
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<style>
+    input[type="text"],
+    select {
+        display: block;
+        width: 100%;
+        padding: 0.75rem;
+        font-size: 1rem;
+        color: #212529;
+        background-color: #fff;
+        border: 1px solid #ced4da;
+        border-radius: 0.375rem;
+        transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+    }
+    
+    input:focus,
+    select:focus {
+        border-color: #86b7fe;
+        outline: 0;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+</style>
+
+{% endblock %}

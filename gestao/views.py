@@ -3,8 +3,11 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.contrib import messages # Para enviar feedback (ex: "Cuidador não encontrado")
 from .forms import IdosoForm, ContratoForm, RotinaForm # Importe o novo form
-from django.utils import timezone # Para pegar a data de hoje
+from datetime import timedelta
+from django.utils import timezone
+from .models import Plano, Assinatura # Importe Assinatura e Plano
 from .models import Idoso, Contrato, Rotina # Importe o modelo
+from .models import Chat, Mensagem # Importe os novos modelos
 from cadastrousuario.models import Profile
 from django.shortcuts import get_object_or_404 #segurança
 
@@ -24,6 +27,26 @@ def cadastrar_idoso(request):
     if not is_familiar:
         # Se não for familiar, redireciona para a home
         return redirect('home')
+    
+    # ... (verificações de is_familiar) ...
+
+    # --- LÓGICA DO PLANO AQUI ---
+    # 1. Verifica qual o limite do usuário
+    try:
+        limite = request.user.assinatura.plano.limite_idosos
+    except:
+        limite = 2 # Se não tiver assinatura, o padrão é 2 (Regra do Gratuito)
+
+    # 2. Conta quantos ele já tem
+    qtd_atual = request.user.idosos.count()
+
+    # 3. Bloqueia se atingiu
+    if qtd_atual >= limite:
+        messages.warning(request, f"Seu plano atual permite apenas {limite} idosos. Faça um upgrade!")
+        return redirect('gestao:listar_planos')
+    # ----------------------------
+
+    # ... (resto da função normal: if request.method == 'POST'...)
 
     # 3. Lógica do Formulário (igual ao de cadastro de usuário)
     if request.method == 'POST':
@@ -108,9 +131,9 @@ def responder_contrato(request, contrato_id, resposta):
 
 @login_required
 def atualizar_rotina(request, idoso_id):
-    # 1. Segurança: Verifica se o Cuidador tem contrato ATIVO com esse Idoso
-    # (Isso cobre a validação inicial do diagrama)
     idoso = get_object_or_404(Idoso, id=idoso_id)
+    
+    # 1. Segurança: Verifica contrato ativo
     tem_contrato = Contrato.objects.filter(
         cuidador=request.user, 
         idoso=idoso, 
@@ -121,22 +144,34 @@ def atualizar_rotina(request, idoso_id):
         messages.error(request, "Você não tem permissão para cuidar deste idoso.")
         return redirect('home')
 
-    # 2. Verifica se já existe rotina HOJE (Lógica de "Atualizar")
-    hoje = timezone.now().date()
+    # 2. Define o HOJE corretamente (usando o fuso horário local)
+    hoje = timezone.localdate()
+
+    # 3. Tenta buscar a rotina.
+    # Se não achar pelo filtro normal, tenta garantir que não vamos duplicar.
     rotina_existente = Rotina.objects.filter(idoso=idoso, data=hoje).first()
 
     if request.method == 'POST':
-        # Se já existe, atualiza (instance=rotina_existente). Se não, cria nova.
+        # Passamos a instância (rotina_existente). 
+        # Se ela for None, o Django cria. Se existir, ele atualiza.
         form = RotinaForm(request.POST, instance=rotina_existente)
+        
         if form.is_valid():
-            rotina = form.save(commit=False)
-            rotina.idoso = idoso
-            rotina.cuidador = request.user
-            rotina.save()
-            messages.success(request, "Rotina atualizada com sucesso!")
-            return redirect('home')
+            try:
+                rotina = form.save(commit=False)
+                rotina.idoso = idoso
+                rotina.cuidador = request.user
+                # Força a data correta para evitar confusão de fuso horário
+                rotina.data = hoje 
+                rotina.save()
+                
+                messages.success(request, "Rotina atualizada com sucesso!")
+                return redirect('home')
+            except Exception as e:
+                # Se der erro de duplicidade mesmo assim, avisa o usuário
+                messages.error(request, "Erro ao salvar: Já existe uma rotina para hoje.")
+                
     else:
-        # Preenche o formulário com dados existentes se houver
         form = RotinaForm(instance=rotina_existente)
 
     return render(request, 'gestao/atualizar_rotina.html', {
@@ -160,7 +195,84 @@ def visualizar_rotina(request, idoso_id):
     # O 'related_name="rotinas"' que definimos no models.py ajuda aqui
     rotinas = idoso.rotinas.all().order_by('-data')
 
+    # Verifica assinatura
+    try:
+        assinatura = request.user.assinatura
+        eh_premium = assinatura.esta_valida() and assinatura.plano.historico_ilimitado
+    except:
+        eh_premium = False
+
+    if not eh_premium:
+        # Se NÃO é premium, limita a 7 dias atrás
+        sete_dias_atras = timezone.now().date() - timedelta(days=7)
+        rotinas = rotinas.filter(data__gte=sete_dias_atras)
+        aviso_limitacao = True # Para mostrar um banner no HTML
+    else:
+        aviso_limitacao = False
+
     return render(request, 'gestao/visualizar_rotina.html', {
         'idoso': idoso,
-        'rotinas': rotinas
+        'rotinas': rotinas,
+        'aviso_limitacao': aviso_limitacao # Passamos essa variável nova
+    })
+
+@login_required
+def listar_planos(request):
+    planos = Plano.objects.all().order_by('valor')
+    return render(request, 'gestao/planos.html', {'planos': planos})
+
+@login_required
+def assinar_plano(request, plano_id):
+    plano = get_object_or_404(Plano, id=plano_id)
+    
+    # Simulação do Mock: Ao clicar, já leva para uma tela de "Processando"
+    # ou já ativa direto. Vamos fazer uma tela intermediária simples.
+    return render(request, 'gestao/pagamento_mock.html', {'plano': plano})
+
+@login_required
+def processar_pagamento(request, plano_id):
+    # Lógica do Mock: Simplesmente ativa o plano
+    plano = get_object_or_404(Plano, id=plano_id)
+    
+    # Pega a assinatura do usuário ou cria uma se não existir
+    assinatura, created = Assinatura.objects.get_or_create(familiar=request.user)
+    
+    assinatura.plano = plano
+    assinatura.ativar() # Aquele método que criamos no models.py
+    
+    messages.success(request, f"Parabéns! Você assinou o plano {plano.nome}.")
+    return redirect('home')
+
+@login_required
+def abrir_chat(request, contrato_id):
+    # 1. Busca o contrato e garante segurança (só os envolvidos acessam)
+    contrato = get_object_or_404(Contrato, id=contrato_id)
+    
+    if request.user != contrato.familiar and request.user != contrato.cuidador:
+        messages.error(request, "Você não tem permissão para acessar este chat.")
+        return redirect('home')
+    
+    # 2. Busca ou Cria o Chat (Lógica do SD08 - criarChat)
+    # get_or_create é perfeito aqui: se já existe, pega. Se não, cria.
+    chat, created = Chat.objects.get_or_create(contrato=contrato)
+
+    # 3. Processa nova mensagem (Lógica do SD08 - enviarMsn)
+    if request.method == 'POST':
+        texto = request.POST.get('mensagem')
+        if texto:
+            Mensagem.objects.create(
+                chat=chat,
+                remetente=request.user,
+                texto=texto
+            )
+            # Redireciona para a mesma página para limpar o input e mostrar a msg
+            return redirect('gestao:abrir_chat', contrato_id=contrato.id)
+
+    # 4. Busca as mensagens para exibir
+    mensagens = chat.mensagens.all()
+
+    return render(request, 'gestao/chat.html', {
+        'contrato': contrato,
+        'chat': chat,
+        'mensagens': mensagens
     })

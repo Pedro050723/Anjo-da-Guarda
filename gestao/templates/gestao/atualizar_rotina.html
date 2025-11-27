@@ -1,15 +1,91 @@
-<h2>Diário de {{ idoso.nome }}</h2>
-<p>Data: {{ hoje|date:"d/m/Y" }}</p>
+{% extends 'base.html' %} {% block content %}
 
-<form method="post">
-    {% csrf_token %} {% for field in form %}
-    <div style="margin-bottom: 15px;">
-        <label style="font-weight: bold;">{{ field.label }}</label>
-        <br> {{ field }}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+
+        <div class="card shadow-lg border-0">
+            <div class="card-header bg-primary text-white py-3 d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">
+                    <i class="fas fa-clipboard-list me-2"></i> Diário de {{ idoso.nome }}
+                </h4>
+                <span class="badge bg-light text-primary fs-6">
+                    <i class="far fa-calendar-alt"></i> {{ hoje|date:"d/m/Y" }}
+                </span>
+            </div>
+
+            <div class="card-body p-4">
+                <p class="text-muted mb-4">
+                    Preencha as informações sobre o dia de hoje. Se não houver novidades em algum item, pode deixar em branco.
+                </p>
+
+                <form method="post">
+                    {% csrf_token %} {% for field in form %}
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-dark d-flex align-items-center">
+                                {% if 'medicamentos' in field.name %}
+                                    <i class="fas fa-pills me-2 text-danger"></i>
+                                {% elif 'refeicoes' in field.name %}
+                                    <i class="fas fa-utensils me-2 text-warning"></i>
+                                {% elif 'atividades' in field.name %}
+                                    <i class="fas fa-walking me-2 text-success"></i>
+                                {% elif 'anormalidades' in field.name %}
+                                    <i class="fas fa-exclamation-triangle me-2 text-danger"></i>
+                                {% else %}
+                                    <i class="fas fa-pen me-2"></i>
+                                {% endif %}
+                                {{ field.label }}
+                            </label> {{ field }} {% if field.help_text %}
+                        <small class="text-muted">{{ field.help_text }}</small> {% endif %}
+                    </div>
+                    {% endfor %}
+
+                    <hr>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'home' %}" class="btn btn-outline-secondary px-4">
+                            <i class="fas fa-arrow-left"></i> Voltar
+                        </a>
+                        <button type="submit" class="btn btn-success btn-lg px-5 fw-bold">
+                            <i class="fas fa-save"></i> Salvar Rotina
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
     </div>
-    {% endfor %}
+</div>
 
-    <button type="submit" style="padding: 10px 20px; background-color: #4CAF50; color: white; border: none;">
-        Salvar Rotina
-    </button>
-</form>
+<style>
+    textarea {
+        display: block;
+        width: 100%;
+        padding: 0.75rem;
+        font-size: 1rem;
+        line-height: 1.5;
+        color: #212529;
+        background-color: #f8f9fa;
+        /* Fundo levemente cinza */
+        border: 1px solid #ced4da;
+        border-radius: 0.375rem;
+        transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+        resize: vertical;
+        /* Permite esticar a caixa verticalmente */
+        min-height: 80px;
+    }
+    
+    textarea:focus {
+        background-color: #fff;
+        border-color: #86b7fe;
+        outline: 0;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+    /* Destaque especial para o campo de anormalidades se quiser */
+    
+    textarea[name="anormalidades"]:focus {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25);
+    }
+</style>
+
+{% endblock %}
