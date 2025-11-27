@@ -1,12 +1,94 @@
-<h2>Escolha seu Plano</h2>
-{% for plano in planos %}
-<div style="border:1px solid #ccc; padding:10px; margin:10px;">
-    <h3>{{ plano.nome }}</h3>
-    <p>R$ {{ plano.valor }}</p>
-    <ul>
-        <li>Até {{ plano.limite_idosos }} idosos</li>
-        <li>{% if plano.historico_ilimitado %}Histórico Ilimitado{% else %}Histórico de 7 dias{% endif %}</li>
-    </ul>
-    <a href="{% url 'gestao:assinar_plano' plano.id %}">Escolher este</a>
+{% extends 'base.html' %} {% block content %}
+
+<div class="container py-5">
+
+    <div class="text-center mb-5">
+        <h2 class="fw-bold display-5">Escolha o Plano Ideal</h2>
+        <p class="text-muted lead">Invista na segurança e no cuidado de quem você ama.</p>
+    </div>
+
+    <div class="row justify-content-center">
+
+        {% for plano in planos %}
+        <div class="col-md-6 col-lg-4 mb-4">
+
+            <div class="card h-100 shadow-sm border-0 {% if plano.valor > 0 %}border-primary border-2 shadow-lg{% endif %}">
+
+                {% if plano.valor > 0 %}
+                <div class="card-header bg-primary text-white text-center py-2">
+                    <small class="fw-bold text-uppercase ls-1">Mais Popular</small>
+                </div>
+                {% endif %}
+
+                <div class="card-body p-4 d-flex flex-column">
+
+                    <h4 class="card-title text-muted text-uppercase fw-bold mb-4">
+                        {{ plano.nome }}
+                    </h4>
+
+                    <div class="display-4 fw-bold text-dark mb-4">
+                        <span class="fs-4 align-top">R$</span>{{ plano.valor }}<span class="fs-5 text-muted">/mês</span>
+                    </div>
+
+                    <ul class="list-unstyled mb-5 flex-grow-1">
+
+                        <li class="mb-3 d-flex align-items-center">
+                            <i class="fas fa-check text-success me-3"></i>
+                            <span>Até <strong>{{ plano.limite_idosos }} idosos</strong> cadastrados</span>
+                        </li>
+
+                        <li class="mb-3 d-flex align-items-center">
+                            {% if plano.historico_ilimitado %}
+                            <i class="fas fa-check text-success me-3"></i>
+                            <span>Histórico de Rotina <strong>Ilimitado</strong></span> {% else %}
+                            <i class="fas fa-info-circle text-secondary me-3"></i>
+                            <span>Histórico limitado a 7 dias</span> {% endif %}
+                        </li>
+
+                        <li class="mb-3 d-flex align-items-center">
+                            <i class="fas fa-check text-success me-3"></i>
+                            <span>Acesso ao Chat com Cuidadores</span>
+                        </li>
+                    </ul>
+
+                    <div class="d-grid">
+                        {% if plano.valor > 0 %}
+                        <a href="{% url 'gestao:assinar_plano' plano.id %}" class="btn btn-primary btn-lg fw-bold">
+                                    Assinar Agora
+                                </a> {% else %}
+                        <a href="{% url 'gestao:assinar_plano' plano.id %}" class="btn btn-outline-secondary btn-lg fw-bold">
+                                    Começar Grátis
+                                </a> {% endif %}
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+    </div>
+
+    <div class="text-center mt-4">
+        <p class="text-muted small">
+            <i class="fas fa-lock"></i> Pagamento seguro processado via MockGateway. Cancelamento a qualquer momento.
+        </p>
+    </div>
+
 </div>
-{% endfor %}
+
+<style>
+    .ls-1 {
+        letter-spacing: 1px;
+    }
+    /* Efeito de hover nos cards */
+    
+    .card {
+        transition: transform 0.3s ease;
+    }
+    
+    .card:hover {
+        transform: translateY(-5px);
+    }
+</style>
+
+{% endblock %}

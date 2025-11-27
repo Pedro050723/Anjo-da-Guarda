@@ -117,3 +117,32 @@ class Assinatura(models.Model):
     def esta_valida(self):
         agora = timezone.now()
         return self.status == 'ativa' and self.data_expiracao and self.data_expiracao > agora
+    
+class Chat(models.Model):
+    # Vínculo 1-para-1 com o Contrato (conforme VCP08)
+    # Assim que um contrato é aceito, esse chat passa a existir virtualmente
+    contrato = models.OneToOneField(
+        Contrato, 
+        on_delete=models.CASCADE, 
+        related_name="chat_room"
+    )
+    criado_em = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Chat do Contrato #{self.contrato.id}"
+
+class Mensagem(models.Model):
+    # Vínculo com o Chat (E-Chat)
+    chat = models.ForeignKey(Chat, on_delete=models.CASCADE, related_name="mensagens")
+    
+    # Vínculo com o Usuário (Quem enviou - E-Usuário)
+    remetente = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    
+    texto = models.TextField()
+    data_envio = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['data_envio'] # Mensagens antigas no topo, novas embaixo
+
+    def __str__(self):
+        return f"{self.remetente.username}: {self.texto[:20]}..."

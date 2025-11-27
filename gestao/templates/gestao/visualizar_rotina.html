@@ -1,45 +1,123 @@
-{% if aviso_limitacao %}
-<div style="background-color: #fff3cd; color: #856404; padding: 10px; margin-bottom: 15px;">
-    ⚠️ Você está vendo apenas os últimos 7 dias.
-    <a href="{% url 'gestao:listar_planos' %}">Vire Premium</a> para ver tudo.
-</div>
-{% endif %}
+{% extends 'base.html' %} {% block content %}
 
-<h2>Histórico de Rotina: {{ idoso.nome }}</h2>
-<a href="{% url 'home' %}">Voltar para Home</a>
-<hr> {% if rotinas %} {% for rotina in rotinas %}
-<div style="border: 1px solid #ccc; padding: 15px; margin-bottom: 20px; border-radius: 8px; background-color: #f9f9f9;">
+<div class="container">
 
-    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #eee; padding-bottom: 10px; margin-bottom: 10px;">
-        <strong>📅 Data: {{ rotina.data|date:"d/m/Y" }}</strong>
-        <small>Registrado por: {{ rotina.cuidador.username|default:"Cuidador desconhecido" }}</small>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-0 text-primary">
+                <i class="fas fa-history me-2"></i> Histórico: {{ idoso.nome }}
+            </h2>
+            <small class="text-muted">Acompanhe a rotina diária registrada pelos cuidadores.</small>
+        </div>
+        <a href="{% url 'home' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i> Voltar
+        </a>
     </div>
 
-    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-
-        {% if rotina.medicamentos %}
+    {% if aviso_limitacao %}
+    <div class="alert alert-warning d-flex align-items-center shadow-sm mb-4 border-warning" role="alert">
+        <i class="fas fa-lock me-3 fs-2 text-warning"></i>
         <div>
-            <strong>💊 Medicamentos:</strong>
-            <p>{{ rotina.medicamentos|linebreaks }}</p>
+            <h5 class="alert-heading fw-bold mb-1">Histórico Limitado</h5>
+            <p class="mb-0">
+                Você está vendo apenas os registros dos últimos <strong>7 dias</strong>.
+                <a href="{% url 'gestao:listar_planos' %}" class="btn btn-warning btn-sm fw-bold ms-2 text-dark">
+                    <i class="fas fa-crown"></i> Vire Premium
+                </a> para desbloquear o histórico completo.
+            </p>
         </div>
-        {% endif %} {% if rotina.refeicoes %}
-        <div>
-            <strong>🍎 Refeições:</strong>
-            <p>{{ rotina.refeicoes|linebreaks }}</p>
-        </div>
-        {% endif %} {% if rotina.atividades %}
-        <div>
-            <strong>⚽ Atividades:</strong>
-            <p>{{ rotina.atividades|linebreaks }}</p>
-        </div>
-        {% endif %} {% if rotina.anormalidades %}
-        <div style="color: #d32f2f;">
-            <strong>⚠️ Ocorrências/Anormalidades:</strong>
-            <p>{{ rotina.anormalidades|linebreaks }}</p>
-        </div>
-        {% endif %}
     </div>
+    {% endif %}
+
+    <hr class="mb-4"> {% if rotinas %}
+
+    <div class="row">
+        <div class="col-md-10 mx-auto">
+
+            {% for rotina in rotinas %}
+            <div class="card shadow-sm mb-4 border-0">
+
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center border-bottom">
+                    <div>
+                        <span class="badge bg-primary fs-6 me-2">
+                                    <i class="far fa-calendar-alt"></i> {{ rotina.data|date:"d/m/Y" }}
+                                </span>
+                        <span class="text-muted small">{{ rotina.data|date:"l" }}</span>
+                    </div>
+                    <div class="text-muted small">
+                        <i class="fas fa-user-nurse me-1"></i> Registrado por: <strong>{{ rotina.cuidador.username|default:"Cuidador não identificado" }}</strong>
+                    </div>
+                </div>
+
+                <div class="card-body">
+
+                    {% if rotina.anormalidades %}
+                    <div class="alert alert-danger mb-4">
+                        <h5 class="alert-heading text-danger">
+                            <i class="fas fa-exclamation-triangle me-2"></i> Ocorrências / Anormalidades
+                        </h5>
+                        <p class="mb-0 text-dark">{{ rotina.anormalidades|linebreaksbr }}</p>
+                    </div>
+                    {% endif %}
+
+                    <div class="row g-4">
+
+                        <div class="col-md-6">
+                            <div class="h-100 p-3 bg-light rounded border-start border-4 border-primary">
+                                <h6 class="text-primary fw-bold mb-2">
+                                    <i class="fas fa-pills me-2"></i> Medicamentos
+                                </h6>
+                                {% if rotina.medicamentos %}
+                                <p class="mb-0 text-secondary">{{ rotina.medicamentos|linebreaksbr }}</p>
+                                {% else %}
+                                <small class="text-muted fst-italic">Nenhum registro.</small> {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="h-100 p-3 bg-light rounded border-start border-4 border-warning">
+                                <h6 class="text-warning fw-bold mb-2" style="color: #fd7e14 !important;">
+                                    <i class="fas fa-utensils me-2"></i> Refeições
+                                </h6>
+                                {% if rotina.refeicoes %}
+                                <p class="mb-0 text-secondary">{{ rotina.refeicoes|linebreaksbr }}</p>
+                                {% else %}
+                                <small class="text-muted fst-italic">Nenhum registro.</small> {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="col-md-12">
+                            <div class="p-3 bg-light rounded border-start border-4 border-success">
+                                <h6 class="text-success fw-bold mb-2">
+                                    <i class="fas fa-walking me-2"></i> Atividades e Lazer
+                                </h6>
+                                {% if rotina.atividades %}
+                                <p class="mb-0 text-secondary">{{ rotina.atividades|linebreaksbr }}</p>
+                                {% else %}
+                                <small class="text-muted fst-italic">Nenhum registro.</small> {% endif %}
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% else %}
+
+    <div class="text-center py-5">
+        <div class="mb-3">
+            <i class="fas fa-clipboard-list text-muted opacity-25" style="font-size: 5rem;"></i>
+        </div>
+        <h4 class="text-muted">Nenhum registro encontrado</h4>
+        <p class="text-secondary">Ainda não há diários preenchidos para este idoso{% if aviso_limitacao %} neste período{% endif %}.</p>
+    </div>
+
+    {% endif %}
+
 </div>
-{% endfor %} {% else %}
-<p>Nenhum registro de rotina encontrado para este idoso.</p>
-{% endif %}
+
+{% endblock %}
