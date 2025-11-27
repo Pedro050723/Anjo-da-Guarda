@@ -1,25 +1,95 @@
-<h2>Acessar o Sistema</h2>
+{% extends 'base.html' %} {% block content %}
 
-{% if form.errors %}
-<p style="color: red;">Seu nome de usuário ou senha não correspondem. Tente novamente.</p>
-{% endif %}
+<div class="row justify-content-center align-items-center" style="min-height: 80vh;">
+    <div class="col-md-5 col-lg-4">
 
-<form method="post" action="{% url 'login' %}">
-    {% csrf_token %}
+        <div class="card shadow-lg border-0 rounded-lg">
 
-    <div style="margin-bottom: 10px;">
-        <label>Usuário:</label>
-        <br> {{ form.username }}
+            <div class="card-header bg-primary text-white text-center py-4">
+                <h3 class="mb-0"><i class="fas fa-sign-in-alt me-2"></i>Bem-vindo</h3>
+                <small>Acesse o Anjo da Guarda</small>
+            </div>
+
+            <div class="card-body p-4">
+
+                {% if form.errors %}
+                <div class="alert alert-danger d-flex align-items-center" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <div>
+                        Usuário ou senha incorretos. Tente novamente.
+                    </div>
+                </div>
+                {% endif %}
+
+                <form method="post" action="{% url 'login' %}">
+                    {% csrf_token %}
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-secondary">Usuário</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-user"></i></span> {{ form.username }}
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-secondary">Senha</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-lock"></i></span> {{ form.password }}
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg fw-bold">
+                            Entrar no Sistema
+                        </button>
+                    </div>
+
+                    <input type="hidden" name="next" value="{{ next }}">
+                </form>
+            </div>
+
+            <div class="card-footer text-center py-3 bg-light">
+                <div class="small">
+                    Ainda não tem conta? <a href="{% url 'cadastrar' %}" class="text-primary fw-bold">Cadastre-se aqui</a>
+                </div>
+            </div>
+        </div>
+
     </div>
+</div>
 
-    <div style="margin-bottom: 10px;">
-        <label>Senha:</label>
-        <br> {{ form.password }}
-    </div>
+<style>
+    /* Estiliza os inputs gerados pelo form.username e form.password */
+    
+    input[type="text"],
+    input[type="password"] {
+        display: block;
+        width: 100%;
+        /* Ocupa todo o espaço menos o ícone */
+        padding: 0.75rem 0.75rem;
+        font-size: 1rem;
+        font-weight: 400;
+        line-height: 1.5;
+        color: #212529;
+        background-color: #fff;
+        background-clip: padding-box;
+        border: 1px solid #ced4da;
+        border-top-right-radius: 0.375rem;
+        border-bottom-right-radius: 0.375rem;
+        transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
+    }
+    
+    input:focus {
+        border-color: #86b7fe;
+        outline: 0;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+    }
+    /* Ajuste para o input group funcionar com o Django widgets padrão */
+    
+    .input-group input {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+    }
+</style>
 
-    <button type="submit">Entrar</button>
-
-    <input type="hidden" name="next" value="{{ next }}">
-</form>
-
-<p>Não tem conta? <a href="{% url 'gestao:cadastrar' %}">Cadastre-se aqui</a></p>
+{% endblock %}
