@@ -1,4 +1,5 @@
-{% extends 'gestao/base.html' %} {% block content %}
+{% extends 'gestao/base.html' %} 
+{% block content %}
 
 <div class="row justify-content-center">
     <div class="col-md-8 col-lg-6">
@@ -15,27 +16,29 @@
                 </p>
 
                 <form method="post">
-                    {% csrf_token %} {% for field in form %}
+                    {% csrf_token %} 
+                    
                     <div class="mb-3">
-                        <label class="form-label fw-bold text-secondary">
-                                {% if 'nome' in field.name %}
-                                    <i class="fas fa-user me-1"></i>
-                                {% elif 'idade' in field.name %}
-                                    <i class="fas fa-birthday-cake me-1"></i>
-                                {% elif 'saude' in field.name or 'condicoes' in field.name %}
-                                    <i class="fas fa-heartbeat me-1 text-danger"></i>
-                                {% else %}
-                                    <i class="fas fa-pen me-1"></i>
-                                {% endif %}
-                                {{ field.label }}
-                            </label> {{ field }} {% if field.help_text %}
-                        <small class="text-muted">{{ field.help_text }}</small> {% endif %} {% if field.errors %}
-                        <div class="text-danger small mt-1">
-                            {{ field.errors }}
-                        </div>
-                        {% endif %}
+                        <label class="form-label fw-bold text-secondary" for="id_nome">
+                            <i class="fas fa-user me-1"></i> Nome Completo
+                        </label>
+                        <input type="text" name="nome" id="id_nome" class="form-control" required placeholder="Ex: Maria da Silva">
                     </div>
-                    {% endfor %}
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-secondary" for="id_idade">
+                            <i class="fas fa-birthday-cake me-1"></i> Idade
+                        </label>
+                        <input type="number" name="idade" id="id_idade" class="form-control" required placeholder="Ex: 82">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-secondary" for="id_condicoes">
+                            <i class="fas fa-heartbeat me-1 text-danger"></i> Condições de Saúde / Observações
+                        </label>
+                        <textarea name="condicoes_saude" id="id_condicoes" class="form-control" rows="4" placeholder="Ex: Hipertensão, diabetes, dificuldade de locomoção..."></textarea>
+                        <small class="text-muted">Descreva detalhes importantes para o cuidador.</small>
+                    </div>
 
                     <hr class="my-4">
 
@@ -55,6 +58,8 @@
 </div>
 
 <style>
+    /* Mantive seu estilo para garantir compatibilidade, 
+       mas adicionei a classe .form-control do bootstrap nos inputs acima */
     input[type="text"],
     input[type="number"],
     textarea,

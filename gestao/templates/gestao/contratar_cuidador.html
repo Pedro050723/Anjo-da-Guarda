@@ -1,4 +1,5 @@
-{% extends 'gestao/base.html' %} {% block content %}
+{% extends 'gestao/base.html' %} 
+{% block content %}
 
 <div class="row justify-content-center">
     <div class="col-md-8 col-lg-6">
@@ -16,24 +17,28 @@
                 </div>
 
                 <form method="post">
-                    {% csrf_token %} {% for field in form %}
+                    {% csrf_token %} 
+                    
                     <div class="mb-4">
-                        <label class="form-label fw-bold text-secondary">
-                                {% if 'idoso' in field.name %}
-                                    <i class="fas fa-user-injured me-1"></i>
-                                {% elif 'cuidador' in field.name %}
-                                    <i class="fas fa-user-nurse me-1"></i>
-                                {% else %}
-                                    <i class="fas fa-pen me-1"></i>
-                                {% endif %}
-                                {{ field.label }}
-                            </label> {{ field }} {% if field.errors %}
-                        <div class="text-danger small mt-1">
-                            <i class="fas fa-exclamation-circle"></i> {{ field.errors.0 }}
-                        </div>
-                        {% endif %}
+                        <label class="form-label fw-bold text-secondary" for="select-idoso">
+                            <i class="fas fa-user-injured me-1"></i> Para qual idoso?
+                        </label>
+                        <select name="idoso" id="select-idoso" class="form-select" required>
+                            <option value="" disabled selected>Selecione um idoso da lista...</option>
+                            {% for idoso in meus_idosos %}
+                                <option value="{{ idoso.id }}">{{ idoso.nome }}</option>
+                            {% empty %}
+                                <option value="" disabled>Nenhum idoso cadastrado. Cadastre um primeiro.</option>
+                            {% endfor %}
+                        </select>
                     </div>
-                    {% endfor %}
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-secondary" for="input-cuidador">
+                            <i class="fas fa-user-nurse me-1"></i> Nome de usuário do Cuidador
+                        </label>
+                        <input type="text" name="username_cuidador" id="input-cuidador" class="form-control" required placeholder="Digite o login exato do cuidador">
+                    </div>
 
                     <hr class="my-4">
 
@@ -53,6 +58,7 @@
 </div>
 
 <style>
+    /* Mantive o CSS para garantir o visual, adicionando classes do bootstrap */
     input[type="text"],
     select {
         display: block;

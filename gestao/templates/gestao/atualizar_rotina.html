@@ -1,4 +1,5 @@
-{% extends 'gestao/base.html' %} {% block content %}
+{% extends 'gestao/base.html' %} 
+{% block content %}
 
 <div class="row justify-content-center">
     <div class="col-md-8">
@@ -19,25 +20,35 @@
                 </p>
 
                 <form method="post">
-                    {% csrf_token %} {% for field in form %}
+                    {% csrf_token %} 
+                    
                     <div class="mb-4">
-                        <label class="form-label fw-bold text-dark d-flex align-items-center">
-                                {% if 'medicamentos' in field.name %}
-                                    <i class="fas fa-pills me-2 text-danger"></i>
-                                {% elif 'refeicoes' in field.name %}
-                                    <i class="fas fa-utensils me-2 text-warning"></i>
-                                {% elif 'atividades' in field.name %}
-                                    <i class="fas fa-walking me-2 text-success"></i>
-                                {% elif 'anormalidades' in field.name %}
-                                    <i class="fas fa-exclamation-triangle me-2 text-danger"></i>
-                                {% else %}
-                                    <i class="fas fa-pen me-2"></i>
-                                {% endif %}
-                                {{ field.label }}
-                            </label> {{ field }} {% if field.help_text %}
-                        <small class="text-muted">{{ field.help_text }}</small> {% endif %}
+                        <label class="form-label fw-bold text-dark d-flex align-items-center" for="id_medicamentos">
+                            <i class="fas fa-pills me-2 text-danger"></i> Medicamentos
+                        </label>
+                        <textarea name="medicamentos" id="id_medicamentos" rows="3" placeholder="Quais remédios foram dados?">{{ rotina.medicamentos|default_if_none:"" }}</textarea>
                     </div>
-                    {% endfor %}
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-dark d-flex align-items-center" for="id_refeicoes">
+                            <i class="fas fa-utensils me-2 text-warning"></i> Refeições
+                        </label>
+                        <textarea name="refeicoes" id="id_refeicoes" rows="3" placeholder="O que o idoso comeu?">{{ rotina.refeicoes|default_if_none:"" }}</textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-dark d-flex align-items-center" for="id_atividades">
+                            <i class="fas fa-walking me-2 text-success"></i> Atividades
+                        </label>
+                        <textarea name="atividades" id="id_atividades" rows="3" placeholder="Passeios, TV, conversas...">{{ rotina.atividades|default_if_none:"" }}</textarea>
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="form-label fw-bold text-dark d-flex align-items-center" for="id_anormalidades">
+                            <i class="fas fa-exclamation-triangle me-2 text-danger"></i> Anormalidades
+                        </label>
+                        <textarea name="anormalidades" id="id_anormalidades" rows="3" placeholder="Algo fora do comum?">{{ rotina.anormalidades|default_if_none:"" }}</textarea>
+                    </div>
 
                     <hr>
 
@@ -65,12 +76,10 @@
         line-height: 1.5;
         color: #212529;
         background-color: #f8f9fa;
-        /* Fundo levemente cinza */
         border: 1px solid #ced4da;
         border-radius: 0.375rem;
         transition: border-color .15s ease-in-out, box-shadow .15s ease-in-out;
         resize: vertical;
-        /* Permite esticar a caixa verticalmente */
         min-height: 80px;
     }
     
@@ -80,7 +89,6 @@
         outline: 0;
         box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
     }
-    /* Destaque especial para o campo de anormalidades se quiser */
     
     textarea[name="anormalidades"]:focus {
         border-color: #dc3545;

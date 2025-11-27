@@ -1,4 +1,5 @@
-{% extends 'gestao/base.html' %} {% block content %}
+{% extends 'gestao/base.html' %} 
+{% block content %}
 
 <div class="row justify-content-center align-items-center" style="min-height: 80vh;">
     <div class="col-md-6 col-lg-5">
@@ -11,18 +12,39 @@
 
             <div class="card-body p-4">
                 <form method="post">
-                    {% csrf_token %} {% for field in form %}
+                    {% csrf_token %} 
+                    
                     <div class="mb-3">
-                        <label class="form-label fw-bold text-secondary">{{ field.label }}</label> {{ field }} {% if field.help_text %}
-                        <small class="form-text text-muted d-block mt-1" style="font-size: 0.8rem;">
-                                    {{ field.help_text }}
-                                </small> {% endif %} {% if field.errors %} {% for error in field.errors %}
-                        <div class="text-danger small mt-1">
-                            <i class="fas fa-exclamation-circle"></i> {{ error }}
-                        </div>
-                        {% endfor %} {% endif %}
+                        <label class="form-label fw-bold text-secondary">Nome de Usuário</label>
+                        <input type="text" name="username" class="form-control" required placeholder="Escolha seu login">
+                        <small class="text-muted" style="font-size: 0.8rem;">Será usado para entrar no sistema.</small>
                     </div>
-                    {% endfor %}
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-secondary">E-mail</label>
+                        <input type="email" name="email" class="form-control" required placeholder="exemplo@email.com">
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-secondary">Eu sou...</label>
+                        <select name="tipo_usuario" class="form-select" required>
+                            <option value="" disabled selected>Selecione uma opção</option>
+                            <option value="familiar">Familiar (Quero contratar cuidados)</option>
+                            <option value="cuidador">Cuidador (Quero oferecer serviços)</option>
+                        </select>
+                    </div>
+
+                    <hr class="my-4">
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-secondary">Senha</label>
+                        <input type="password" name="senha1" class="form-control" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-bold text-secondary">Confirmar Senha</label>
+                        <input type="password" name="senha2" class="form-control" required>
+                    </div>
 
                     <div class="d-grid gap-2 mt-4">
                         <button type="submit" class="btn btn-primary btn-lg fw-bold">
@@ -43,7 +65,8 @@
 </div>
 
 <style>
-    /* Força os inputs gerados pelo Django a ocuparem 100% e terem estilo moderno */
+    /* Mantivemos seu CSS para garantir o visual, 
+       mas adicionei .form-control e .form-select do Bootstrap no HTML acima */
     
     input[type="text"],
     input[type="password"],
@@ -68,13 +91,6 @@
         border-color: #86b7fe;
         outline: 0;
         box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-    }
-    /* Remove as bolinhas das listas de ajuda de senha do Django */
-    
-    ul {
-        list-style-type: none;
-        padding-left: 0;
-        margin-bottom: 0;
     }
 </style>
 
