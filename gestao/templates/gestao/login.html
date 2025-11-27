@@ -1,4 +1,4 @@
-{% extends 'base.html' %} {% block content %}
+{% extends 'gestao/base.html' %} {% block content %}
 
 <div class="row justify-content-center align-items-center" style="min-height: 80vh;">
     <div class="col-md-5 col-lg-4">
@@ -50,7 +50,7 @@
 
             <div class="card-footer text-center py-3 bg-light">
                 <div class="small">
-                    Ainda não tem conta? <a href="{% url 'cadastrar' %}" class="text-primary fw-bold">Cadastre-se aqui</a>
+                    Ainda não tem conta? <a href="{% url 'gestao:cadastrar' %}" class="text-primary fw-bold">Cadastre-se aqui</a>
                 </div>
             </div>
         </div>

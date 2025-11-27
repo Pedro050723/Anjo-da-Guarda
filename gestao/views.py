@@ -56,6 +56,13 @@ def home(request):
                     status='ativo'
                 )
                 context['meus_contratos'] = meus_idosos
+            elif request.user.profile.tipo_usuario == 'familiar':
+                # Busca contratos aceitos para mostrar o botão de chat
+                contratos_ativos = Contrato.objects.filter(
+                    familiar=request.user, 
+                    status='ativo'
+                )
+                context['contratos_familia'] = contratos_ativos
 
         except:
             pass # Se der erro no profile (ex: superuser), ignora

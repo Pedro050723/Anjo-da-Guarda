@@ -1,4 +1,4 @@
-{% extends 'base.html' %} {% block content %}
+{% extends 'gestao/base.html' %} {% block content %}
 
 <div class="row justify-content-center">
     <div class="col-md-8 col-lg-6">
@@ -62,7 +62,7 @@
             <div class="card-footer bg-white py-3">
                 <form method="post" class="d-flex align-items-center">
                     {% csrf_token %}
-                    <input type="text" name="mensagem" class="form-control rounded-pill me-2 bg-light border-0" placeholder="Digite sua mensagem..." required style="padding: 12px 20px;" autocomplete="off">
+                    <input type="text" id="input-mensagem" name="mensagem" class="form-control rounded-pill me-2 bg-light border-0" placeholder="Digite sua mensagem..." required style="padding: 12px 20px;" autocomplete="off">
                     <button type="submit" class="btn btn-primary rounded-circle d-flex justify-content-center align-items-center shadow-sm" style="width: 50px; height: 50px;">
                         <i class="fas fa-paper-plane"></i>
                     </button>
@@ -129,16 +129,35 @@
     // Função para rolar para o final
     function rolarParaFinal() {
         var objDiv = document.getElementById("area-mensagens");
-        objDiv.scrollTop = objDiv.scrollHeight;
+        // Verifica se o elemento existe para evitar erros
+        if (objDiv) {
+            objDiv.scrollTop = objDiv.scrollHeight;
+        }
     }
 
     // Executa assim que carrega
     rolarParaFinal();
 
-    // Atualização Automática (Polling de 5 segundos para ficar mais ágil)
-    setTimeout(function() {
-        location.reload();
-    }, 5000);
+    // Nova Lógica de Atualização
+    function verificarEAtualizar() {
+        // Pega o campo onde o usuário digita (usando o ID que criamos no Passo 1)
+        var campoTexto = document.getElementById("input-mensagem");
+
+        // Verifica: O campo existe? E tem alguma letra digitada dentro dele?
+        if (campoTexto && campoTexto.value.trim() !== "") {
+            console.log("Usuário está digitando... adiando atualização.");
+            
+            // Se tiver texto, NÃO recarrega agora.
+            // Espera mais 2 segundos e pergunta de novo (Recursividade)
+            setTimeout(verificarEAtualizar, 2000);
+        } else {
+            // Se o campo estiver vazio, pode recarregar tranquilo
+            location.reload();
+        }
+    }
+
+    // Começa o ciclo: tenta atualizar daqui a 5 segundos
+    setTimeout(verificarEAtualizar, 5000);
 </script>
 
 {% endblock %}
