@@ -6,9 +6,9 @@ from django.contrib import messages # Para enviar feedback (ex: "Cuidador não e
 from .forms import IdosoForm, ContratoForm, RotinaForm, C_Cadastro # Importe o novo form
 from datetime import timedelta
 from django.utils import timezone
-from .models import Plano, Assinatura # Importe Assinatura e Plano
-from .models import Idoso, Contrato, Rotina, Profile # Importe o modelo
-from .models import Chat, Mensagem # Importe os novos modelos
+from .models import Plano, E_Assinatura # Importe E_Assinatura e Plano
+from .models import E_Idoso, E_Contrato, Rotina, Profile # Importe o modelo
+from .models import Chat, E_MSN # Importe os novos modelos
 from django.shortcuts import get_object_or_404 #segurança
 
 # Create your views here.
@@ -43,7 +43,7 @@ def home(request):
         try:
             # Se for CUIDADOR, busca os convites pendentes
             if request.user.profile.tipo_usuario == 'cuidador':
-                convites = Contrato.objects.filter(
+                convites = E_Contrato.objects.filter(
                     cuidador=request.user,
                     status='pendente'
                 )
@@ -51,14 +51,14 @@ def home(request):
                 context['convites'] = convites
                 
                 # Também podemos buscar os contratos já ACEITOS para mostrar a lista de idosos
-                meus_idosos = Contrato.objects.filter(
+                meus_idosos = E_Contrato.objects.filter(
                     cuidador=request.user,
                     status='ativo'
                 )
                 context['meus_contratos'] = meus_idosos
             elif request.user.profile.tipo_usuario == 'familiar':
                 # Busca contratos aceitos para mostrar o botão de chat
-                contratos_ativos = Contrato.objects.filter(
+                contratos_ativos = E_Contrato.objects.filter(
                     familiar=request.user, 
                     status='ativo'
                 )
@@ -146,7 +146,7 @@ def contratar_cuidador(request):
                     messages.error(request, f"'{username_cuidador}' não é uma conta de Cuidador.")
                 else:
                     # 3. Salva o Contrato (SD05 - criarContrato)
-                    Contrato.objects.create(
+                    E_Contrato.objects.create(
                         familiar=request.user,
                         cuidador=cuidador,
                         idoso=idoso_selecionado
@@ -170,7 +170,7 @@ def contratar_cuidador(request):
 def responder_contrato(request, contrato_id, resposta):
     # Busca o contrato no banco ou dá erro 404 se não existir.
     # O filtro 'cuidador=request.user' garante que ninguém aceite o contrato de outro!
-    contrato = get_object_or_404(Contrato, id=contrato_id, cuidador=request.user)
+    contrato = get_object_or_404(E_Contrato, id=contrato_id, cuidador=request.user)
 
     if resposta == 'aceitar':
         contrato.status = 'ativo'
@@ -187,10 +187,10 @@ def responder_contrato(request, contrato_id, resposta):
 
 @login_required
 def atualizar_rotina(request, idoso_id):
-    idoso = get_object_or_404(Idoso, id=idoso_id)
+    idoso = get_object_or_404(E_Idoso, id=idoso_id)
     
     # 1. Segurança: Verifica contrato ativo
-    tem_contrato = Contrato.objects.filter(
+    tem_contrato = E_Contrato.objects.filter(
         cuidador=request.user, 
         idoso=idoso, 
         status='ativo'
@@ -239,7 +239,7 @@ def atualizar_rotina(request, idoso_id):
 @login_required
 def visualizar_rotina(request, idoso_id):
     # 1. Busca o Idoso
-    idoso = get_object_or_404(Idoso, id=idoso_id)
+    idoso = get_object_or_404(E_Idoso, id=idoso_id)
 
     # 2. Segurança: Só o Familiar dono do idoso pode ver (RF05)
     # (Ou um cuidador com contrato ativo, se quisermos expandir depois)
@@ -291,7 +291,7 @@ def processar_pagamento(request, plano_id):
     plano = get_object_or_404(Plano, id=plano_id)
     
     # Pega a assinatura do usuário ou cria uma se não existir
-    assinatura, created = Assinatura.objects.get_or_create(familiar=request.user)
+    assinatura, created = E_Assinatura.objects.get_or_create(familiar=request.user)
     
     assinatura.plano = plano
     assinatura.ativar() # Aquele método que criamos no models.py
@@ -302,7 +302,7 @@ def processar_pagamento(request, plano_id):
 @login_required
 def abrir_chat(request, contrato_id):
     # 1. Busca o contrato e garante segurança (só os envolvidos acessam)
-    contrato = get_object_or_404(Contrato, id=contrato_id)
+    contrato = get_object_or_404(E_Contrato, id=contrato_id)
     
     if request.user != contrato.familiar and request.user != contrato.cuidador:
         messages.error(request, "Você não tem permissão para acessar este chat.")
@@ -316,7 +316,7 @@ def abrir_chat(request, contrato_id):
     if request.method == 'POST':
         texto = request.POST.get('mensagem')
         if texto:
-            Mensagem.objects.create(
+            E_MSN.objects.create(
                 chat=chat,
                 remetente=request.user,
                 texto=texto

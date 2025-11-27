@@ -1,6 +1,6 @@
 # gestao/forms.py
 from django import forms
-from .models import Idoso, Contrato, Rotina, Profile
+from .models import E_Idoso, E_Contrato, Rotina, Profile
 from django.contrib.auth.models import User
 from django.contrib.auth.forms import UserCreationForm
 from django.db import transaction # Para garantir que os dois sejam criados
@@ -42,7 +42,7 @@ class C_Cadastro(UserCreationForm):
     
 class IdosoForm(forms.ModelForm):
     class Meta:
-        model = Idoso
+        model = E_Idoso
         # Os campos do formulário (Nome, Idade, Observações do SD03)
         fields = ['nome', 'idade', 'condicoes_saude']
         
@@ -59,12 +59,12 @@ class ContratoForm(forms.ModelForm):
     # Campo para selecionar o idoso
     # Vamos preencher as opções (choices) dinamicamente na view
     idoso = forms.ModelChoiceField(
-        queryset=Idoso.objects.none(), 
+        queryset=E_Idoso.objects.none(), 
         label="Para qual idoso?"
     )
 
     class Meta:
-        model = Contrato
+        model = E_Contrato
         fields = ['idoso', 'username_cuidador'] # Campos que o usuário vê
 
     def __init__(self, *args, **kwargs):
@@ -75,7 +75,7 @@ class ContratoForm(forms.ModelForm):
         if familiar:
             # Filtra o campo 'idoso' para mostrar APENAS os idosos
             # que pertencem ao Familiar logado
-            self.fields['idoso'].queryset = Idoso.objects.filter(
+            self.fields['idoso'].queryset = E_Idoso.objects.filter(
                 familiar_responsavel=familiar
             )
 class RotinaForm(forms.ModelForm):
